@@ -4,14 +4,14 @@ output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE)
 ```
 
-```{r, echo = FALSE}
-MDI <- data.frame(read.csv("~/mdi/maps.csv", stringsAsFactors = FALSE))
-MDI$pool1 <- factor(MDI$pool1)
-MDI$pool2 <- factor(MDI$pool2)
-MDI$pool3 <- factor(MDI$pool3)
+```{r}
+Regionals <- data.frame(read.csv("~/mdi/MDI_regionals.csv", stringsAsFactors = FALSE))
+Regionals$pool1 <- factor(Regionals$pool1)
+Regionals$pool2 <- factor(Regionals$pool2)
+Regionals$pool3 <- factor(Regionals$pool3)
 library(jpeg)
 Bolstering  <- readJPEG("~/mdi/icons/bolstering.jpg")
 Bursting    <- readJPEG("~/mdi/icons/bursting.jpg")
@@ -53,10 +53,10 @@ library(ggplot2)
 library(magrittr)
 library(reshape2)
 library(grid)
-MDI.t <- MDI %>%                        select(dungeon,affix1,affix2,affix3) %>% melt('dungeon') %>% arrange(dungeon)
-pool1 <- MDI %>% filter(pool1 == 1) %>% select(dungeon,affix1,affix2,affix3) %>% melt('dungeon') %>% arrange(dungeon)
-pool2 <- MDI %>% filter(pool2 == 1) %>% select(dungeon,affix1,affix2,affix3) %>% melt('dungeon') %>% arrange(dungeon)
-pool3 <- MDI %>% filter(pool3 == 1) %>% select(dungeon,affix1,affix2,affix3) %>% melt('dungeon') %>% arrange(dungeon)
+MDI.regionals <- Regionals %>%                        select(dungeon,affix1,affix2,affix3) %>% melt('dungeon') %>% arrange(dungeon)
+Regionals.p1 <-  Regionals %>% filter(pool1 == 1) %>% select(dungeon,affix1,affix2,affix3) %>% melt('dungeon') %>% arrange(dungeon)
+Regionals.p2 <-  Regionals %>% filter(pool2 == 1) %>% select(dungeon,affix1,affix2,affix3) %>% melt('dungeon') %>% arrange(dungeon)
+Regionals.p3 <-  Regionals %>% filter(pool3 == 1) %>% select(dungeon,affix1,affix2,affix3) %>% melt('dungeon') %>% arrange(dungeon)
 
 ```
 
@@ -98,22 +98,34 @@ poolToPlot <- function(pool, icons, title) {
   }
   return(pool.gg)
 }
-poolToPlot(MDI.t,icons,"MDI")
+poolToPlot(MDI.regionals,icons,"MDI")
 ```
 
 ```{r, fig.height = 3, echo = FALSE}
-poolToPlot(pool1,icons,"Map Pool 1, Difficulty Level 22")
-poolToPlot(pool2,icons,"Map Pool 2, Difficulty Level 23")
-poolToPlot(pool3,icons,"Map Pool 3, Difficulty Level 24")
+(Regionals.p1.gg <- poolToPlot(Regionals.p1,icons,"Map Pool 1, Difficulty Level 22"))
+(Regionals.p2.gg <- poolToPlot(Regionals.p2,icons,"Map Pool 2, Difficulty Level 23"))
+(Regionals.p3.gg <- poolToPlot(Regionals.p3,icons,"Map Pool 3, Difficulty Level 24"))
+
+ggsave("Regionals_Pool_1.png",Regionals.p1.gg,width=26,height=12,units="cm")
+ggsave("Regionals_Pool_2.png",Regionals.p2.gg,width=26,height=12,units="cm")
+ggsave("Regionals_Pool_3.png",Regionals.p3.gg,width=26,height=12,units="cm")
 ```
+
 ```{r}
-finals <- read.csv("~/mdi/finals.csv", stringsAsFactors = FALSE)
-finals.p1 <- finals %>% filter(pool1 == 1) %>% select(dungeon,affix1,affix2,affix3) %>% melt('dungeon') %>% arrange(dungeon)
-finals.p2 <- finals %>% filter(pool2 == 1) %>% select(dungeon,affix1,affix2,affix3) %>% melt('dungeon') %>% arrange(dungeon)
-finals.p3 <- finals %>% filter(pool3 == 1) %>% select(dungeon,affix1,affix2,affix3) %>% melt('dungeon') %>% arrange(dungeon)
+Finals <- read.csv("~/mdi/MDI_finals.csv", stringsAsFactors = FALSE)
 
-poolToPlot(finals.p1,icons,"Finals Map Pool 1, Difficulty Level 23")
-poolToPlot(finals.p2,icons,"Finals Map Pool 2, Difficulty Level 24")
-poolToPlot(finals.p3,icons,"Finals Map Pool 3, Difficulty Level 25")
+MDI.Finals <- Finals %>%                        select(dungeon,affix1,affix2,affix3) %>% melt('dungeon') %>% arrange(dungeon)
+Finals.p1 <-  Finals %>% filter(pool1 == 1) %>% select(dungeon,affix1,affix2,affix3) %>% melt('dungeon') %>% arrange(dungeon)
+Finals.p2 <-  Finals %>% filter(pool2 == 1) %>% select(dungeon,affix1,affix2,affix3) %>% melt('dungeon') %>% arrange(dungeon)
+Finals.p3 <-  Finals %>% filter(pool3 == 1) %>% select(dungeon,affix1,affix2,affix3) %>% melt('dungeon') %>% arrange(dungeon)
 
+(MDI.Finals.gg <- poolToPlot(MDI.Finals,icons,"Lan Finals"))
+(Finals.p1.gg <- poolToPlot(Finals.p1,icons,"Finals Map Pool 1, Difficulty Level 23"))
+(Finals.p2.gg <- poolToPlot(Finals.p2,icons,"Finals Map Pool 2, Difficulty Level 24"))
+(Finals.p3.gg <- poolToPlot(Finals.p3,icons,"Finals Map Pool 3, Difficulty Level 25"))
+
+
+ggsave("Finals_Pool_1.png",Finals.p1.gg,width=26,height=12,units="cm")
+ggsave("Finals_Pool_2.png",Finals.p2.gg,width=26,height=12,units="cm")
+ggsave("Finals_Pool_3.png",Finals.p3.gg,width=26,height=12,units="cm")
 ```
