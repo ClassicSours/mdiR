@@ -1,0 +1,119 @@
+---
+title: "MDI"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, echo = FALSE}
+MDI <- data.frame(read.csv("~/mdi/maps.csv", stringsAsFactors = FALSE))
+MDI$pool1 <- factor(MDI$pool1)
+MDI$pool2 <- factor(MDI$pool2)
+MDI$pool3 <- factor(MDI$pool3)
+library(jpeg)
+Bolstering  <- readJPEG("~/mdi/icons/bolstering.jpg")
+Bursting    <- readJPEG("~/mdi/icons/bursting.jpg")
+Explosive   <- readJPEG("~/mdi/icons/explosive.jpg")
+Fortified   <- readJPEG("~/mdi/icons/fortified.jpg")
+
+Grievous    <- readJPEG("~/mdi/icons/grievous.jpg")
+Necrotic    <- readJPEG("~/mdi/icons/necrotic.jpg")
+Quaking     <- readJPEG("~/mdi/icons/quaking.jpg")
+Raging      <- readJPEG("~/mdi/icons/raging.jpg")
+
+Sanguine    <- readJPEG("~/mdi/icons/sanguine.jpg")
+Teeming     <- readJPEG("~/mdi/icons/teeming.jpg")
+Tyrannical  <- readJPEG("~/mdi/icons/tyrannical.jpg")
+Volcanic    <- readJPEG("~/mdi/icons/volcanic.jpg")
+Skittish    <- readJPEG("~/mdi/icons/skittish.jpg")
+Questionmark<- readJPEG("~/mdi/icons/questionmark.jpg")
+
+icons <- list("Bolstering" = Bolstering,
+                "Bursting" = Bursting,
+               "Explosive" = Explosive,
+               "Fortified" = Fortified,
+                "Grievous" = Grievous,
+                "Necrotic" = Necrotic,
+                 "Quaking" = Quaking,
+                  "Raging" = Raging,
+                "Sanguine" = Sanguine,
+                 "Teeming" = Teeming,
+              "Tyrannical" = Tyrannical,
+                "Volcanic" = Volcanic,
+                "Skittish" = Skittish,
+            "Questionmark" = Questionmark)
+```
+
+```{r, message = FALSE, echo = FALSE}
+library(pander)
+library(dplyr)
+library(ggplot2)
+library(magrittr)
+library(reshape2)
+library(grid)
+MDI.t <- MDI %>%                        select(dungeon,affix1,affix2,affix3) %>% melt('dungeon') %>% arrange(dungeon)
+pool1 <- MDI %>% filter(pool1 == 1) %>% select(dungeon,affix1,affix2,affix3) %>% melt('dungeon') %>% arrange(dungeon)
+pool2 <- MDI %>% filter(pool2 == 1) %>% select(dungeon,affix1,affix2,affix3) %>% melt('dungeon') %>% arrange(dungeon)
+pool3 <- MDI %>% filter(pool3 == 1) %>% select(dungeon,affix1,affix2,affix3) %>% melt('dungeon') %>% arrange(dungeon)
+
+```
+
+
+```{r, echo = FALSE}
+poolToPlot <- function(pool, icons, title) {
+  pool.gg <- ggplot(aes(x = variable, y = dungeon), data = pool) + 
+  geom_tile(fill = NA, color = 'black') + 
+  geom_text(aes(label = ifelse(is.na(value),"N/A",value)), hjust = 0, nudge_x = -.4) +
+  theme_classic() + 
+  theme(axis.line = element_blank(), 
+        axis.title = element_blank(), axis.ticks = element_blank()) + 
+  ggtitle(title)
+
+  for (i in 1:nrow(pool)) {
+    if(i == 1) {
+      ymin1 <- ymin2 <- ymin3 <- 0.5
+      ymax1 <- ymax2 <- ymax3 <- 1.5
+    }
+    dungeon <- pool[i,]
+    if(dungeon$variable == "affix1") {
+      pool.gg <- pool.gg + annotation_custom(rasterGrob(icons[[ifelse(is.na(dungeon$value),"Questionmark",dungeon$value)]]),   
+                                               xmin = 0.85, xmax = 1.85, ymin = ymin1, ymax = ymax1)
+      ymin1 <- ymin1 + 1
+      ymax1 <- ymax1 + 1
+    }
+    if(dungeon$variable == "affix2") {
+      pool.gg <- pool.gg + annotation_custom(rasterGrob(icons[[ifelse(is.na(dungeon$value),"Questionmark",dungeon$value)]]),   
+                                               xmin = 1.85, xmax = 2.85, ymin = ymin2, ymax = ymax2)
+      ymin2 <- ymin2 + 1
+      ymax2 <- ymax2 + 1
+    }
+    if(dungeon$variable == "affix3") {
+      pool.gg <- pool.gg + annotation_custom(rasterGrob(icons[[ifelse(is.na(dungeon$value),"Questionmark",dungeon$value)]]),   
+                                               xmin = 2.85, xmax = 3.85, ymin = ymin3, ymax = ymax3)
+      ymin3 <- ymin3 + 1
+      ymax3 <- ymax3 + 1
+    }
+  }
+  return(pool.gg)
+}
+poolToPlot(MDI.t,icons,"MDI")
+```
+
+```{r, fig.height = 3, echo = FALSE}
+poolToPlot(pool1,icons,"Map Pool 1, Difficulty Level 22")
+poolToPlot(pool2,icons,"Map Pool 2, Difficulty Level 23")
+poolToPlot(pool3,icons,"Map Pool 3, Difficulty Level 24")
+```
+```{r}
+finals <- read.csv("~/mdi/finals.csv", stringsAsFactors = FALSE)
+finals.p1 <- finals %>% filter(pool1 == 1) %>% select(dungeon,affix1,affix2,affix3) %>% melt('dungeon') %>% arrange(dungeon)
+finals.p2 <- finals %>% filter(pool2 == 1) %>% select(dungeon,affix1,affix2,affix3) %>% melt('dungeon') %>% arrange(dungeon)
+finals.p3 <- finals %>% filter(pool3 == 1) %>% select(dungeon,affix1,affix2,affix3) %>% melt('dungeon') %>% arrange(dungeon)
+
+poolToPlot(finals.p1,icons,"Finals Map Pool 1, Difficulty Level 23")
+poolToPlot(finals.p2,icons,"Finals Map Pool 2, Difficulty Level 24")
+poolToPlot(finals.p3,icons,"Finals Map Pool 3, Difficulty Level 25")
+
+```
